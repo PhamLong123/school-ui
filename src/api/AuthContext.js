@@ -16,7 +16,7 @@ export const AuthContextProvider = ({ children }) => {
       setgetLogin({ isAuthenticated: true });
       const token = res.data.token;
       var jwtDecode = jwt(token);
-      console.log(jwtDecode);
+      // console.log(jwtDecode);
       navigate("/", { state: { jwtDecode, token } });
       newCookie.set("token", token, { path: "/" });
     });
