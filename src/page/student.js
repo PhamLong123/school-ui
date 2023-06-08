@@ -13,6 +13,7 @@ const Student = () => {
         if(token!==stateLogin||stateLogin===null||stateLogin===undefined){
             navigate('/login');
         }
+        
     })
     return (
         <div>
