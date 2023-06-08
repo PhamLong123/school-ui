@@ -26,7 +26,7 @@ const Parents = () => {
       let token = await cookies.get("token");
       const role = jwtDecode(token);
       if(location.state?.role!==role.roles[0]){
-        navigate('/login');
+        logout();
     }
     }
     catch(err){
@@ -41,9 +41,11 @@ const Parents = () => {
 
 
     const logout = () => {
+      localStorage.removeItem("date");
+      localStorage.removeItem("refreshToken");
       cookies.remove("token");
       navigate("/login");
-    }
+  }
     // TODO remove, this demo shouldn't need to reset the theme.
     const defaultTheme = createTheme();
     return (
