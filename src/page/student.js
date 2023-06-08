@@ -6,21 +6,38 @@ import Cookies from "universal-cookie";
 import client from "../api/client";
 
 const Student = () => {
+    const cookies = new Cookies();
+    const location = useLocation();
+    const navigate = useNavigate();
+    const logout = () => {
+        localStorage.removeItem("date");
+        localStorage.removeItem("refreshToken");
+        cookies.remove("token");
+        navigate("/login");
+    }
     let payload = {
         refreshToken: localStorage.getItem('refreshToken')
     }
-    const cookies = new Cookies();
-    const refresh = async (payload) => {
-        await client.post("/auth/refreshtoken", payload).then((res) => {
-            cookies.set("cookie", res.data.token);
-        });
-    }
+
     let date = Math.floor(Date.now() / 1000);
-    if (localStorage.getItem("date") <= date) {
-        refresh(payload);
-    }
-    const location = useLocation();
-    const navigate = useNavigate();
+
+
+    useEffect(() => {
+        if (payload.refreshToken == null){
+            logout();
+        }
+        
+        if (localStorage.getItem("date") <= date) {
+            refresh(payload).catch(()=>{
+                logout();
+            });
+        }else{
+            checkRole().catch(()=>{
+                logout();
+            });
+        }
+    })
+
     const checkRole = async () => {
         try {
             let token = await cookies.get("token");
@@ -30,22 +47,19 @@ const Student = () => {
             }
         }
         catch (err) {
-            refresh(payload);
+            refresh(payload).catch(()=>{
+                logout();
+            });
         }
     }
-    useEffect(() => {
-        checkRole();
-    })
-
-    console.log(location.state?.dateUnix);
-
-
-    const logout = () => {
-        localStorage.removeItem("date");
-        localStorage.removeItem("refreshToken");
-        cookies.remove("token");
-        navigate("/login");
+    
+    const refresh = async (payload) => {
+        await client.post("/auth/refreshtoken", payload).then((res) => {
+            cookies.set("token", res.data.token);
+        });
     }
+    // console.log(location.state?.dateUnix);
+
     // TODO remove, this demo shouldn't need to reset the theme.
     const defaultTheme = createTheme();
     return (
@@ -67,6 +81,9 @@ const Student = () => {
                     </Button>
                 </Toolbar>
             </AppBar>
+            <div>
+        Student
+      </div>
         </ThemeProvider>
 
     )

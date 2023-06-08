@@ -6,45 +6,57 @@ import { useLocation, useNavigate } from "react-router-dom";
 import Cookies from "universal-cookie";
 import client from "../api/client";
 const Parents = () => {
-  let payload = {
-    refreshToken: localStorage.getItem('refreshToken')
-  }
   const cookies = new Cookies();
-  const refresh = async (payload) => {
-    await client.post("/auth/refreshtoken",payload).then((res)=>{
-      cookies.set("cookie",res.data.token);
-    });
-  }
-  let date = Math.floor(Date.now()/1000);
-  if(localStorage.getItem("date")<=date){
-    refresh(payload);
-  }
   const location = useLocation();
   const navigate = useNavigate();
-  const checkRole = async () =>{
-    try{
-      let token = await cookies.get("token");
-      const role = jwtDecode(token);
-      if(location.state?.role!==role.roles[0]){
-        logout();
-    }
-    }
-    catch(err){
-      refresh(payload);
-    }
-  }
-  useEffect(() => {
-    checkRole();
-})
-
-    console.log(location.state?.dateUnix);
-
-
-    const logout = () => {
+  const logout = () => {
       localStorage.removeItem("date");
       localStorage.removeItem("refreshToken");
       cookies.remove("token");
       navigate("/login");
+  }
+  let payload = {
+      refreshToken: localStorage.getItem('refreshToken')
+  }
+
+  let date = Math.floor(Date.now() / 1000);
+
+
+  useEffect(() => {
+      if (payload.refreshToken == null){
+          logout();
+      }
+      
+      if (localStorage.getItem("date") <= date) {
+          refresh(payload).catch(()=>{
+              logout();
+          });
+      }else{
+          checkRole().catch(()=>{
+              logout();
+          });
+      }
+  })
+
+  const checkRole = async () => {
+      try {
+          let token = await cookies.get("token");
+          const role = jwtDecode(token);
+          if (location.state?.role !== role.roles[0]) {
+              logout();
+          }
+      }
+      catch (err) {
+          refresh(payload).catch(()=>{
+              logout();
+          });
+      }
+  }
+  
+  const refresh = async (payload) => {
+      await client.post("/auth/refreshtoken", payload).then((res) => {
+          cookies.set("token", res.data.token);
+      });
   }
     // TODO remove, this demo shouldn't need to reset the theme.
     const defaultTheme = createTheme();
@@ -67,6 +79,9 @@ const Parents = () => {
           </Button>
         </Toolbar>
       </AppBar>
+      <div>
+        Parents
+      </div>
     </ThemeProvider>
 
     )
