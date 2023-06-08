@@ -9,6 +9,7 @@ import Teacher from "./page/teacher";
 import Parents from "./page/parent";
 import Student from "./page/student";
 function App() {
+
   // const router = createBrowserRouter([
   //   {
   //     path: "/login",

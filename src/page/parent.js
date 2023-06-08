@@ -1,37 +1,45 @@
 import { ThemeProvider } from "@emotion/react";
-import { AppBar, Box, Button, Card, CardActions, CardContent, CardHeader, Container, CssBaseline, GlobalStyles, Grid, Toolbar, Typography, createTheme } from "@mui/material";
+import { AppBar, Button, CssBaseline, GlobalStyles, Toolbar, createTheme } from "@mui/material";
 import jwtDecode from "jwt-decode";
 import { useEffect } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import Cookies from "universal-cookie";
 import client from "../api/client";
 const Parents = () => {
-    const cookies = new Cookies();
-    const token = cookies.get("token");
-    const role = jwtDecode(token);
-    // console.log(role);
-    const location = useLocation();
-    const navigate = useNavigate();
-    let date = Math.floor(Date.now()/1000);
-    console.log(date);
-    console.log(location.state.dateUnix);
-    const dateUnix =location.state.dateUnix;
-    // let payload = {refreshToken:}
-    // const refresh = async () => {
-    //   await client.get("/auth/refreshToken").then((res)=>{
-    //     cookies.set("cookie",res.data.)
-    //   });
+  let payload = {
+    refreshToken: localStorage.getItem('refreshToken')
+  }
+  const cookies = new Cookies();
+  const refresh = async (payload) => {
+    await client.post("/auth/refreshtoken",payload).then((res)=>{
+      cookies.set("cookie",res.data.token);
+    });
+  }
+  let date = Math.floor(Date.now()/1000);
+  if(localStorage.getItem("date")<=date){
+    refresh(payload);
+  }
+  const location = useLocation();
+  const navigate = useNavigate();
+  const checkRole = async () =>{
+    try{
+      let token = await cookies.get("token");
+      const role = jwtDecode(token);
+      if(location.state?.role!==role.roles[0]){
+        navigate('/login');
+    }
+    }
+    catch(err){
+      refresh(payload);
+    }
+  }
+  useEffect(() => {
+    checkRole();
+})
 
-    // }
-    useEffect(() => {
-        if(dateUnix===date){
+    console.log(location.state?.dateUnix);
 
-        }
-        if(location.state?.role!==role.roles[0]){
-            navigate('/login');
-        }
-        
-    })
+
     const logout = () => {
       cookies.remove("token");
       navigate("/login");

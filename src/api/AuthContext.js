@@ -1,8 +1,6 @@
-import axios from "axios";
 import { createContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Cookies from "universal-cookie";
-import jwt from "jwt-decode";
 import client from "./client.js";
 import jwtDecode from "jwt-decode";
 // axios.defaults.headers.common['Authorization'] = cookies.get('token');
@@ -21,8 +19,11 @@ export const AuthContextProvider = ({ children }) => {
       var role = res.data.roles[0];
       // console.log(role); 
       let date = new Date(jwtDecode(token).exp*1000);
-      console.log(date);
-      navigate("/"+role.toLowerCase(), { state: {role,date,dateUnix:jwtDecode(token).exp}});
+      // console.log(date);
+      const dateUnix = jwtDecode(token).exp;
+      localStorage.setItem('refreshToken',res.data.refreshToken);
+      localStorage.setItem('date',dateUnix);
+      navigate("/"+role.toLowerCase(), { state: {role,date,dateUnix}});
       newCookie.set("token", token, {path: "/",expires:date});
     });
 
